@@ -19,7 +19,8 @@ class User(models.Model):
     
     
 class PublicPlace(models.Model):
-    PLACE_TYPES = (
+    userId = models.ForeignKey(User, on_delete=models.CASCADE,default=None)
+    placeType = (
         ('hotel', 'Hotel'),
         ('restaurant', 'Restaurant'),
         ('farm', 'Farm')
@@ -27,9 +28,9 @@ class PublicPlace(models.Model):
 
     name = models.CharField(max_length=255)
     #location = models.CharField(max_length=255)
-    type = models.CharField(max_length=20, choices=PLACE_TYPES)
+    type = models.CharField(max_length=20, choices=placeType)
     phoneNumber=models.CharField( max_length=10,default="")
-    rate=models.IntegerField(max_length=20,default=1)
+    rating=models.IntegerField(default=1)
     area=models.FloatField(max_length=20,default="")
 
     class Meta:
@@ -40,7 +41,8 @@ class PublicPlace(models.Model):
 
 
 class Hotel(PublicPlace):
-   # hotel_specific_attribute = models.CharField(max_length=255)
+    #publicPlaceId = models.OneToOneField(PublicPlace, on_delete=models.CASCADE,related_name="publicPlaceId",default=None)
+    # hotel_specific_attribute = models.CharField(max_length=255)
     numberOfRooms=models.IntegerField(default=1)
     numberOfStars=models.IntegerField(default=1)
     #placeFK = models.ForeignKey(PublicPlace, on_delete=models.CASCADE)
@@ -53,8 +55,8 @@ class Hotel(PublicPlace):
 
 class Restaurant(PublicPlace):
     #restaurant_specific_attribute = models.CharField(max_length=255)
-    openTime=models.DateField()
-    menuType=models.CharField(max_length=20,default="")
+    openTime=models.TimeField()
+    menuType=models.CharField(max_length=500,default="")
     
 
     class Meta:
@@ -62,61 +64,121 @@ class Restaurant(PublicPlace):
 
 
 class Table(models.Model):
-    tableNumber=models.IntegerField(default=1,max_length=50)
+    tableNumber=models.IntegerField(default=1)
     
 class TableBooking(models.Model):
     price=models.FloatField(max_length=20,default="")
-    checkin=models.DateTimeField(null=True,blank=True)
-    checkout=models.DateTimeField(null=True,blank=True)
+    checkInTime=models.DateTimeField(null=True,blank=True)
+    checkoutTime=models.DateTimeField(null=True,blank=True)
+
+class MenuType(models.Model):
+    restaurantId= models.ForeignKey(Restaurant, on_delete=models.CASCADE,default=None)
+    menuTypeList = (
+        ('Tasting Menu', 'Tasting Menu'),
+        ('Buffet Menu', 'Buffet Menu'),
+        ('Specials Menu', 'Specials Menu'),
+        ('Beverage Menu', 'Beverage Menu'),
+        ('Kids Menu', 'Kids Menu')
+    )
+    menuType= models.CharField(max_length=30,choices=menuTypeList)
 
 
 class Farm(PublicPlace):
-    os_choice=(('Daily' , 'daily'),
-                ('Monthly' , 'monthly'))
+    os_choice=(('daily' , 'Daily'),
+                ('monthly' , 'Monthly'))
     # farm_specific_attribute = models.CharField(max_length=255)
-    rentType= models.CharField(max_length=10,choices=os_choice)
+    rentType= models.CharField(max_length=30,choices=os_choice)
 
 
     class Meta:
         verbose_name_plural = 'farms'
         
 class Room(models.Model):
-    typeRoom=(('single' , 'single'),
+    hotelId=models.ForeignKey(Hotel, on_delete=models.CASCADE,default=None)
+    roomTypes=(('single' , 'single'),
                 ('double' , 'double'),
-                ('vip_room','vip_room'),
+                ('vipRoom','vipRoom'),
                 ('studio','studio'))
-    type_room=models.CharField(max_length=10,choices=typeRoom)
+    roomType=models.CharField(max_length=10,choices=roomTypes,default=None)
     price=models.FloatField(max_length=10,default='')
     roomNumber=models.IntegerField(default=1)
-    bedType=(('single' , 'single'),
+    bedTypes=(('single' , 'single'),
                 ('double' , 'double'))
-    type_bed=models.CharField(max_length=10,choices=bedType)
+    bedType=models.CharField(max_length=10,choices=bedTypes)
     area=models.FloatField(max_length=20,default="")
-    numberOfPerson=models.IntegerField(max_length=10,default='')
+    numberOfPeople=models.IntegerField(default='')
 
 
 class RoomBooking(models.Model):
+    userId = models.ForeignKey(User, on_delete=models.CASCADE,default=None)
+    roomId = models.OneToOneField(Room, on_delete=models.CASCADE,related_name="roomId",default=None)
+
     price=models.FloatField(max_length=20,default="")
-    checkin=models.DateField(default=datetime.date.today)
-    checkout=models.DateField(default=datetime.date.today)
+    checkInDate=models.DateField(default=datetime.date.today)
+    checkoutDate=models.DateField(default=datetime.date.today)
 
 class FarmBooking(models.Model):
+    userId = models.ForeignKey(User, on_delete=models.CASCADE,default=None)
+    farmId = models.OneToOneField(Farm, on_delete=models.CASCADE,default=None)
+
     price=models.FloatField(max_length=20,default="")
-    checkin=models.DateField(default=datetime.date.today)
-    checkout=models.DateField(default=datetime.date.today)
+    checkInDate=models.DateField(default=datetime.date.today)
+    # date=models.TimeField(null=True)
+    checkoutDate=models.DateField(default=datetime.date.today)
 
 
 class Street(models.Model):
+    PublicPlaceId = models.ForeignKey(PublicPlace, on_delete=models.CASCADE,default=None)
     name=models.CharField(default='',max_length=10)
 
 class City(models.Model):
+    streetId = models.ForeignKey(Street, on_delete=models.CASCADE,default=None)
     name=models.CharField(default='',max_length=10)
 
-class Gouvernate(models.Model):
+class Governorate(models.Model):
+    cityId = models.ForeignKey(City, on_delete=models.CASCADE,default=None)
     name=models.CharField(default='',max_length=10)
+    
 
-# class Images(models.Model):
-#     path=models.ImageField(_(""), upload_to=None, height_field=None, width_field=None, max_length=None)
+
+class Amenities(models.Model):
+    name=models.CharField(default='',max_length=10)
+    placeType = (
+        ('hotel', 'Hotel'),
+        ('restaurant', 'Restaurant'),
+        ('farm', 'Farm')
+    )
+    type = models.CharField(max_length=20, choices=placeType)
+    freeParking =models.BooleanField(default=False)
+    bar=models.BooleanField(default=False)
+    currencyExchange=models.BooleanField(default=False)
+    twintyFourHoursFrontDesk=models.BooleanField(default=False)
+    carRental=models.BooleanField(default=False)
+    airportDropOff=models.BooleanField(default=False)
+    cleaningServices=models.BooleanField(default=False)
+    laundryServices=models.BooleanField(default=False)
+    dryCleaning=models.BooleanField(default=False)
+    ATM=models.BooleanField(default=False)
+    faxCopyingServices=models.BooleanField(default=False)
+    firstAidServices=models.BooleanField(default=False)
+    wifi=models.BooleanField(default=False)
+    bbq=models.BooleanField(default=False)
+    multiBathrooms=models.BooleanField(default=False)
+    solarHeater=models.BooleanField(default=False)
+    towels=models.BooleanField(default=False)
+    multiRooms=models.BooleanField(default=False)
+    filteredPool=models.BooleanField(default=False)
+    toy=models.BooleanField(default=False)
+    
+    
+class Service(models.Model):
+    PublicPlaceId = models.ForeignKey(PublicPlace, on_delete=models.CASCADE,default=None)
+    amenityId = models.ForeignKey(Amenities, on_delete=models.CASCADE,default=None)
+
+
+class Images(models.Model):
+    PublicPlaceId = models.ForeignKey(PublicPlace, on_delete=models.CASCADE,default=None)
+    path=models.ImageField(upload_to=None,max_length=None)
 
 
 
