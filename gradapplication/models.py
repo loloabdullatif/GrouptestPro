@@ -9,17 +9,35 @@ from enum import Enum
 # Create your models here.
 
 class User(models.Model):
-    firstname = models.CharField(max_length=255,default="")
-    lastname = models.CharField(max_length=255,default="")
+    # firstname = models.CharField(max_length=255,default="")
+    # lastname = models.CharField(max_length=255,default="")
+    userName= models.CharField(max_length=255,default="",unique=True)
     phoneNumber=models.CharField( max_length=10,default="")
     password=models.CharField(max_length=10,default="")
-    nationalNumber=models.CharField(max_length=15,default="")
+    nationalNumber=models.CharField(max_length=15,default="",unique=True)
     birthDate=models.DateField()
     isOwner=models.BooleanField()
+    
+    def __str__(self):
+        return f'{ self.pk} {self.userName} '
+
+
+
+class Governate(models.Model):
+    name=models.CharField(default='',max_length=10)
+    
+
+class City(models.Model):
+    governateId = models.ForeignKey(Governate, on_delete=models.CASCADE,default=None)
+    name=models.CharField(default='',max_length=10)
+class Street(models.Model):
+    cityId = models.ForeignKey(City, on_delete=models.CASCADE,default=None)
+    name=models.CharField(default='',max_length=10)
     
     
 class PublicPlace(models.Model):
     userId = models.ForeignKey(User, on_delete=models.CASCADE,default=None)
+    streetId = models.ForeignKey(Street, on_delete=models.CASCADE,default=None)
     placeType = (
         ('hotel', 'Hotel'),
         ('restaurant', 'Restaurant'),
@@ -38,6 +56,8 @@ class PublicPlace(models.Model):
 
     def __str__(self):
         return self.name
+
+
 
 
 class Hotel(PublicPlace):
@@ -71,16 +91,16 @@ class TableBooking(models.Model):
     checkInTime=models.DateTimeField(null=True,blank=True)
     checkoutTime=models.DateTimeField(null=True,blank=True)
 
-class MenuType(models.Model):
-    restaurantId= models.ForeignKey(Restaurant, on_delete=models.CASCADE,default=None)
-    menuTypeList = (
-        ('Tasting Menu', 'Tasting Menu'),
-        ('Buffet Menu', 'Buffet Menu'),
-        ('Specials Menu', 'Specials Menu'),
-        ('Beverage Menu', 'Beverage Menu'),
-        ('Kids Menu', 'Kids Menu')
-    )
-    menuType= models.CharField(max_length=30,choices=menuTypeList)
+# class MenuType(models.Model):
+#     restaurantId= models.ForeignKey(Restaurant, on_delete=models.CASCADE,default=None)
+#     menuTypeList = (
+#         ('Tasting Menu', 'Tasting Menu'),
+#         ('Buffet Menu', 'Buffet Menu'),
+#         ('Specials Menu', 'Specials Menu'),
+#         ('Beverage Menu', 'Beverage Menu'),
+#         ('Kids Menu', 'Kids Menu')
+#     )
+#     menuType= models.CharField(max_length=30,choices=menuTypeList)
 
 
 class Farm(PublicPlace):
@@ -88,7 +108,9 @@ class Farm(PublicPlace):
                 ('monthly' , 'Monthly'))
     # farm_specific_attribute = models.CharField(max_length=255)
     rentType= models.CharField(max_length=30,choices=os_choice)
-
+    
+    def __str__(self):
+        return f'{ self.pk} {self.name} '
 
     class Meta:
         verbose_name_plural = 'farms'
@@ -126,23 +148,10 @@ class FarmBooking(models.Model):
     # date=models.TimeField(null=True)
     checkoutDate=models.DateField(default=datetime.date.today)
 
-
-class Street(models.Model):
-    PublicPlaceId = models.ForeignKey(PublicPlace, on_delete=models.CASCADE,default=None)
-    name=models.CharField(default='',max_length=10)
-
-class City(models.Model):
-    streetId = models.ForeignKey(Street, on_delete=models.CASCADE,default=None)
-    name=models.CharField(default='',max_length=10)
-
-class Governorate(models.Model):
-    cityId = models.ForeignKey(City, on_delete=models.CASCADE,default=None)
-    name=models.CharField(default='',max_length=10)
     
 
 
 class Amenities(models.Model):
-    name=models.CharField(default='',max_length=10)
     placeType = (
         ('hotel', 'Hotel'),
         ('restaurant', 'Restaurant'),
