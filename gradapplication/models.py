@@ -9,8 +9,6 @@ from enum import Enum
 # Create your models here.
 
 class User(models.Model):
-    # firstname = models.CharField(max_length=255,default="")
-    # lastname = models.CharField(max_length=255,default="")
     userName= models.CharField(max_length=255,default="",unique=True)
     phoneNumber=models.CharField( max_length=10,default="")
     password=models.CharField(max_length=10,default="")
@@ -65,7 +63,6 @@ class Hotel(PublicPlace):
     # hotel_specific_attribute = models.CharField(max_length=255)
     numberOfRooms=models.IntegerField(default=1)
     numberOfStars=models.IntegerField(default=1)
-    #placeFK = models.ForeignKey(PublicPlace, on_delete=models.CASCADE)
 
 
 

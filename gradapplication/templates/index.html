@@ -3,9 +3,9 @@ members {% endblock %} {% block content %}
 <h1>Members</h1>
 
 <ul>
-  {% for x in myfarms %}
+  {% for x in users %}
   <li>
-    <a href="">{{x.firstname}}{{x.lastname}} {{x.phoneNumber}}</a>
+    <a href="">{{x.userName}} {{x.phoneNumber}}</a>
   </li>
   {% endfor %}
 </ul>
